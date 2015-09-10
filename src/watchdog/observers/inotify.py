@@ -23,6 +23,7 @@
 :author: Luke McCarthy <luke@iogopro.co.uk>
 :author: yesudeep@google.com (Yesudeep Mangalapilly)
 :author: Tim Cuthbertson <tim+github@gfxmonk.net>
+:author: Michael Marchetti <mmarchetti@continuum.io>
 :platforms: Linux 2.6.13+.
 
 .. ADMONITION:: About system requirements
@@ -83,10 +84,12 @@ from watchdog.observers.api import (
 from watchdog.events import (
     DirDeletedEvent,
     DirModifiedEvent,
+    DirAttrModifiedEvent,
     DirMovedEvent,
     DirCreatedEvent,
     FileDeletedEvent,
     FileModifiedEvent,
+    FileAttrModifiedEvent,
     FileMovedEvent,
     FileCreatedEvent,
     generate_sub_moved_events,
@@ -151,7 +154,7 @@ class InotifyEmitter(EventEmitter):
                     for sub_event in generate_sub_created_events(src_path):
                         self.queue_event(sub_event)
             elif event.is_attrib:
-                cls = DirModifiedEvent if event.is_directory else FileModifiedEvent
+                cls = DirAttrModifiedEvent if event.is_directory else FileAttrModifiedEvent
                 self.queue_event(cls(src_path))
             elif event.is_modify:
                 cls = DirModifiedEvent if event.is_directory else FileModifiedEvent

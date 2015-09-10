@@ -20,6 +20,7 @@
 :module: watchdog.events
 :synopsis: File system events and event handlers.
 :author: yesudeep@google.com (Yesudeep Mangalapilly)
+:author: Michael Marchetti <mmarchetti@continuum.io>
 
 Event Classes
 -------------
@@ -45,6 +46,14 @@ Event Classes
    :show-inheritance:
 
 .. autoclass:: DirModifiedEvent
+   :members:
+   :show-inheritance:
+
+.. autoclass:: FileAttrModifiedEvent
+   :members:
+   :show-inheritance:
+
+.. autoclass:: DirAttrModifiedEvent
    :members:
    :show-inheritance:
 
@@ -97,6 +106,7 @@ EVENT_TYPE_MOVED = 'moved'
 EVENT_TYPE_DELETED = 'deleted'
 EVENT_TYPE_CREATED = 'created'
 EVENT_TYPE_MODIFIED = 'modified'
+EVENT_TYPE_ATTR_MODIFIED = 'attr_modified'
 
 
 class FileSystemEvent(object):
@@ -212,6 +222,20 @@ class FileModifiedEvent(FileSystemEvent):
                           src_path=self.src_path))
 
 
+class FileAttrModifiedEvent(FileSystemEvent):
+    """File system event representing file attribute modification on the file system."""
+
+    event_type = EVENT_TYPE_ATTR_MODIFIED
+
+    def __init__(self, src_path):
+        super(FileAttrModifiedEvent, self).__init__(src_path)
+
+    def __repr__(self):
+        return ("<%(class_name)s: src_path=%(src_path)r>"
+                ) % (dict(class_name=self.__class__.__name__,
+                          src_path=self.src_path))
+
+
 class FileCreatedEvent(FileSystemEvent):
     """File system event representing file creation on the file system."""
 
@@ -275,6 +299,23 @@ class DirModifiedEvent(FileSystemEvent):
                           src_path=self.src_path))
 
 
+class DirAttrModifiedEvent(FileSystemEvent):
+    """
+    File system event representing directory attribute modification on the file system.
+    """
+
+    event_type = EVENT_TYPE_ATTR_MODIFIED
+    is_directory = True
+
+    def __init__(self, src_path):
+        super(DirAttrModifiedEvent, self).__init__(src_path)
+
+    def __repr__(self):
+        return ("<%(class_name)s: src_path=%(src_path)r>"
+                ) % (dict(class_name=self.__class__.__name__,
+                          src_path=self.src_path))
+
+
 class DirCreatedEvent(FileSystemEvent):
     """File system event representing directory creation on the file system."""
 
@@ -322,6 +363,7 @@ class FileSystemEventHandler(object):
         self.on_any_event(event)
         _method_map = {
             EVENT_TYPE_MODIFIED: self.on_modified,
+            EVENT_TYPE_ATTR_MODIFIED: self.on_attr_modified,
             EVENT_TYPE_MOVED: self.on_moved,
             EVENT_TYPE_CREATED: self.on_created,
             EVENT_TYPE_DELETED: self.on_deleted,
@@ -446,6 +488,7 @@ class PatternMatchingEventHandler(FileSystemEventHandler):
             self.on_any_event(event)
             _method_map = {
                 EVENT_TYPE_MODIFIED: self.on_modified,
+                EVENT_TYPE_ATTR_MODIFIED: self.on_attr_modified,
                 EVENT_TYPE_MOVED: self.on_moved,
                 EVENT_TYPE_CREATED: self.on_created,
                 EVENT_TYPE_DELETED: self.on_deleted,
@@ -529,6 +572,7 @@ class RegexMatchingEventHandler(FileSystemEventHandler):
             self.on_any_event(event)
             _method_map = {
                 EVENT_TYPE_MODIFIED: self.on_modified,
+                EVENT_TYPE_ATTR_MODIFIED: self.on_attr_modified,
                 EVENT_TYPE_MOVED: self.on_moved,
                 EVENT_TYPE_CREATED: self.on_created,
                 EVENT_TYPE_DELETED: self.on_deleted,
