@@ -416,6 +416,15 @@ class FileSystemEventHandler(object):
             :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
         """
 
+    def on_attr_modified(self, event):
+        """Called when a file or directory is modified.
+
+        :param event:
+            Event representing file/directory modification.
+        :type event:
+            :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
+        """
+
 
 class PatternMatchingEventHandler(FileSystemEventHandler):
     """
