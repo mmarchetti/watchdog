@@ -424,6 +424,9 @@ class FileSystemEventHandler(object):
         :type event:
             :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
         """
+        # for compatibility with prior versions, which mapped
+        # attribute modified events to plain 'modify' events.
+        self.on_modified(event)
 
 
 class PatternMatchingEventHandler(FileSystemEventHandler):
