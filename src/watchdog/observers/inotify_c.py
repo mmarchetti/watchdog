@@ -169,7 +169,7 @@ class Inotify(object):
         ``True`` if subdirectories should be monitored; ``False`` otherwise.
     """
 
-    def __init__(self, path, recursive=False, event_mask=WATCHDOG_ALL_EVENTS):
+    def __init__(self, path, recursive=False, event_mask=WATCHDOG_ALL_EVENTS, filter_fn=None):
         # The file descriptor associated with the inotify instance.
         inotify_fd = inotify_init()
         if inotify_fd == -1:
@@ -184,7 +184,8 @@ class Inotify(object):
         self._path = path
         self._event_mask = event_mask
         self._is_recursive = recursive
-        self._add_dir_watch(path, recursive, event_mask)
+        self._filter = filter_fn
+        self._add_dir_watch(path, recursive, event_mask, filter_fn)
         self._moved_from_events = dict()
 
     @property
@@ -201,6 +202,11 @@ class Inotify(object):
     def is_recursive(self):
         """Whether we are watching directories recursively."""
         return self._is_recursive
+
+    @property
+    def filter(self):
+        """Path filter function."""
+        return self._filter
 
     @property
     def fd(self):
@@ -347,7 +353,7 @@ class Inotify(object):
         return event_list
 
     # Non-synchronized methods.
-    def _add_dir_watch(self, path, recursive, mask):
+    def _add_dir_watch(self, path, recursive, mask, filter_fn):
         """
         Adds a watch (optionally recursively) for the given directory path
         to monitor events specified by the mask.
@@ -364,9 +370,12 @@ class Inotify(object):
         self._add_watch(path, mask)
         if recursive:
             for root, dirnames, _ in os.walk(path):
-                for dirname in dirnames:
+                for dirname in dirnames[:]:
                     full_path = os.path.join(root, dirname)
                     if os.path.islink(full_path):
+                        continue
+                    if filter_fn and not filter_fn(full_path):
+                        dirnames.remove(dirname)
                         continue
                     self._add_watch(full_path, mask)
 

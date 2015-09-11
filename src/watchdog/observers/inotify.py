@@ -121,7 +121,7 @@ class InotifyEmitter(EventEmitter):
 
     def on_thread_start(self):
         path = unicode_paths.encode(self.watch.path)
-        self._inotify = InotifyBuffer(path, self.watch.is_recursive)
+        self._inotify = InotifyBuffer(path, self.watch.is_recursive, self.watch.filter_fn)
 
     def on_thread_stop(self):
         if self._inotify:

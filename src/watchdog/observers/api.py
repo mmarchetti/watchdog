@@ -43,11 +43,14 @@ class ObservedWatch(object):
         Path string.
     :param recursive:
         ``True`` if watch is recursive; ``False`` otherwise.
+    :param filter:
+        Function that accepts a path and returns ``True`` if that path is to be watched.
     """
 
-    def __init__(self, path, recursive):
+    def __init__(self, path, recursive, filter_fn=None):
         self._path = path
         self._is_recursive = recursive
+        self._filter_fn = filter_fn
 
     @property
     def path(self):
@@ -58,6 +61,10 @@ class ObservedWatch(object):
     def is_recursive(self):
         """Determines whether subdirectories are watched for the path."""
         return self._is_recursive
+
+    @property
+    def filter_fn(self):
+        return self._filter_fn
 
     @property
     def key(self):
@@ -255,7 +262,7 @@ class BaseObserver(EventDispatcher):
             emitter.start()
         super(BaseObserver, self).start()
 
-    def schedule(self, event_handler, path, recursive=False):
+    def schedule(self, event_handler, path, recursive=False, filter_fn=None):
         """
         Schedules watching a path and calls appropriate methods specified
         in the given event handler in response to file system events.
@@ -280,7 +287,7 @@ class BaseObserver(EventDispatcher):
             a watch.
         """
         with self._lock:
-            watch = ObservedWatch(path, recursive)
+            watch = ObservedWatch(path, recursive, filter_fn)
             self._add_handler_for_watch(event_handler, watch)
 
             # If we don't have an emitter for this watch already, create it.
