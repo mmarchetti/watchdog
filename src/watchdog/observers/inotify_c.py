@@ -343,13 +343,13 @@ class Inotify(object):
                     # IN_MOVED_TO events which don't pair up with
                     # IN_MOVED_FROM events should be marked IN_CREATE
                     # instead relative to this directory.
-                    try:
-                        if (not self._filter) or self._filter(src_path):
-                            self._add_watch(src_path, self._event_mask)
-                    except OSError:
-                        continue
+                    if (not self._filter) or self._filter(src_path):
+                        try:
+                                self._add_watch(src_path, self._event_mask)
+                        except OSError:
+                            continue
 
-                    event_list.extend(_recursive_simulate(src_path))
+                        event_list.extend(_recursive_simulate(src_path))
 
         return event_list
 
