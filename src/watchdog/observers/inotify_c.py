@@ -344,7 +344,8 @@ class Inotify(object):
                     # IN_MOVED_FROM events should be marked IN_CREATE
                     # instead relative to this directory.
                     try:
-                        self._add_watch(src_path, self._event_mask)
+                        if (not self._filter) or self._filter(full_path):
+                            self._add_watch(src_path, self._event_mask)
                     except OSError:
                         continue
 
